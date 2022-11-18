@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<!-- saved from url=(0014)about:internet -->
+<html>
+<head>
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>登陆</title>
+
+  <link rel="stylesheet" href="./login_files/login.css">
+  <script src="login_files/ddLogin.js"></script>
+  <script src="login_files/jquery.min.js"></script>
+</head>
+
+<body>
+<div class="container">
+  <div class="header">
+    <img style="padding: 20px 25px;width: 128px;height: 34px;"
+         src="http://etreaty.oss-cn-hangzhou.aliyuncs.com/tsignWeb/esign/img/esign-logo.png">
+  </div>
+  <div class="container-body">
+
+    <div class="container-card">
+      <div class="container-title">
+        <div class="card-title card-title-account">用户登录</div>
+        <div class="card-title card-title-qrcode">钉钉扫码</div>
+      </div>
+      <div class="card-body">
+        <div class="account-body">
+          <form method="post" action="/submit">
+            <section class="row">
+              <div>
+                <input class="required" id="username" size="25" tabindex="1" type="text" placeholder="域账号（花名拼音）"
+                       accesskey="n" autocomplete="off" name="username" value="">
+                <div class="errTip userNameErrTip"></div>
+              </div>
+            </section>
+
+            <section class="row">
+              <div>
+                <input class="required" type="password" id="password" size="25" placeholder="域账号密码"
+                       tabindex="2" accesskey="p" autocomplete="off" name="password" value="">
+                <div class="errTip pwdErrTip"></div>
+              </div>
+            </section>
+
+            <section class="btn-wrapper">
+              <input class="btn submitBtn" name="submit" accesskey="l" value="登录" tabindex="6" type="submit">
+            </section>
+            <a href="http://inner-user-out-front.esign.cn/forget" class="project-select"> <font size="2">忘记密码?</font></a>
+          </form>
+        </div>
+        <div class="qrcode-body" id="dingLogin_container" style="display: none">
+        </div>
+      </div>
+    </div>
+    <div class="container-homing">
+      <div class="container-homing__circle container-homing__circle_1"></div>
+      <div class="container-homing__circle container-homing__circle_2"></div>
+      <div class="container-homing__circle container-homing__circle_3"></div>
+      <img src="./login_files/hand.png"/>
+    </div>
+  </div>
+  
+  <div class="footer">
+    <p class="company">Copyright©2014 杭州天谷信息科技有限公司 安全风控部 版权所有 浙ICP备11026113号</p>
+  </div>
+  <div class="v-modal" id="modal_message_box">
+    <div class="message-box">
+      <div class="message-box__header">
+        <div class="message-box__title"><span>提示</span></div>
+        <i class="message-box__close message-box__close-icon"></i>
+      </div>
+      <div class="message-box__content">
+        <div class="message-box__status"></div>
+        <div class="message-box__message">密码错误，请重新输入</div>
+      </div>
+      <div class="message-box__btns">
+        <input class="message-box__close message-box__btn" value="关闭" tabindex="6" type="submit">
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+
+<script>
+  // inter = setTimeout(() => window.location.reload(),  10000);
+  inter = setTimeout(function () {
+    window.location.reload()
+  },  10000);
+
+  $('body').on('mouseover', function () {
+    if (inter) {
+      clearTimeout(inter)
+      inter = false
+    }
+  });
+
+  $('#modal_message_box').hide();
+
+  function getUrlVars() {
+    var vars = [], hash;
+    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+    for (var i = 0; i < hashes.length; i++) {
+      hash = hashes[i].split('=');
+      vars.push(hash[0]);
+      vars[hash[0]] = hash[1];
+    }
+    return vars["msg"];
+  }
+
+  var msg = "";
+  var timer = null
+  if (getUrlVars() !== undefined) {
+    msg = getUrlVars();
+    console.log('msg', msg);
+    $('.message-box__message').text(window.decodeURI(msg))
+    $('#modal_message_box').show()
+
+    var i = 3
+    $('.message-box__btn').val(i + ' 秒后关闭')
+
+    timer = setInterval(function () {
+      i -= 1
+      console.log('i', i);
+      $('.message-box__btn').val(i + ' 秒后关闭')
+      if (i === 0) {
+        timer && clearInterval(timer)
+        $('#modal_message_box').hide()
+      }
+    }, 1000)
+  }
+  function getQueryString(key){
+    var reg = new RegExp("(^|&)"+key+"=([^&]*)(&|$)");
+    var result = window.location.search.substr(1).match(reg);
+    return result?decodeURIComponent(result[2]):null;
+  }
+  var aim_url = getQueryString('_redirect');
+  var redirect_url = aim_url
+  console.log(aim_url + "++++++++++++++" );
+  aim_url = aim_url.split('/');
+  if(aim_url[2]){
+    aim_url = aim_url[0] + "//" + aim_url[2]
+  }
+  console.log(aim_url + "---------------" );
+
+  var gotoParam = {
+    appid: 'dingoaiahwxvgteny2xp98',
+    response_type: 'code',
+    scope: 'snsapi_login',
+    state: 'STATE',
+    redirect_uri:
+      'http://inuser-callback.esign.cn/ding/zeroSweepLogin?_redirect=' + encodeURIComponent(redirect_url)
+  };
+
+  var gotoUrl = 'https://oapi.dingtalk.com/connect/oauth2/sns_authorize?' + $.param(gotoParam)
+  console.log(gotoUrl)
+
+  var initDingQRCode = function () {
+    window.DDLogin({
+      id: 'dingLogin_container',
+      goto: encodeURIComponent(gotoUrl),
+      style: 'border: none; padding: 0; margin: 0; background-color: #FFFFFF;',
+      width: '250',
+      height: '300'
+    })
+  };
+
+  initDingQRCode();
+
+  var handleMessage = function (event) {
+    var origin = event.origin;
+
+    // 判断是否来自ddLogin扫码事件。
+    if (origin === "https://login.dingtalk.com") {
+      var loginTmpCode = event.data;
+
+      // 获取到loginTmpCode后就可以在这里构造跳转链接进行跳转了
+      window.location.href = `${gotoUrl}&loginTmpCode=${loginTmpCode}`
+    }
+  };
+  if (typeof window.addEventListener != 'undefined') {
+    window.addEventListener('message', handleMessage, false);
+  } else if (typeof window.attachEvent != 'undefined') {
+    window.attachEvent('onmessage', handleMessage);
+  }
+
+
+  // 当前激活的登陆状态
+  var activeTitle = 'account';
+
+  $('.qrcode-body').hide();
+
+
+  $('.card-title-account').hover(function () {
+    $('.qrcode-body').hide();
+    $('.account-body').show()
+  });
+
+  $('.card-title-qrcode').hover(function () {
+    $('.account-body').hide();
+    $('.qrcode-body').show()
+  });
+
+
+  $('.message-box__close').click(function () {
+    $('#modal_message_box').hide()
+    timer && clearInterval(timer)
+  })
+  $('.container-homing').click(function () {
+    window.open('https://home.esign.cn')
+  })
+
+  function checkUserNameandSetStatus(userName) {
+    if (isUserNameAvailable(userName)) {
+      $(".userNameErrTip").hide()
+      return true
+    }
+    $(".userNameErrTip").show()
+    if (!userName) {
+      $(".userNameErrTip").text('请输入域账号')
+    } else {
+      $(".userNameErrTip").text('域账号格式不符合要求')
+    }
+    return false
+  }
+  function checkPwdandSetStatus(pwd) {
+    if (isPwdAvailable(pwd)) {
+      $(".pwdErrTip").hide()
+      return true
+    }
+    $(".pwdErrTip").show()
+    $(".pwdErrTip").text('请输入密码')
+    return false
+  }
+ 
+  
+  $("input[name='username']").on('input',function(e){
+    const userName = e.target.value
+    checkUserNameandSetStatus(userName)
+  })
+  $("input[name='password']").on('input',function(e){
+    const pwd = e.target.value
+    checkPwdandSetStatus(pwd)
+  })
+  $('.submitBtn').click(function () {
+    const userName = $("input[name='username']").val()
+    const password = $("input[name='password']").val()
+    const isUserNameValid = checkUserNameandSetStatus(userName)
+    const isPwdValid = checkPwdandSetStatus(password)
+    return isUserNameValid && isPwdValid
+  })
+  function isUserNameAvailable(userName) {
+    return /^[A-Za-z_]+$/.test(userName)
+  }
+  function isPwdAvailable(pwd) {
+    return !!pwd
+  }
+ 
+
+</script>
+</html>
